@@ -1,31 +1,36 @@
-import { TestBed, async } from '@angular/core/testing';
+import { Spectator, createComponentFactory } from '@ngneat/spectator';
+
+import { STATE } from './tokens';
 import { AppComponent } from './app.component';
+import { StateMock } from './mocks/a.mock';
 
 describe('AppComponent', () => {
-  beforeEach(async(() => {
-    TestBed.configureTestingModule({
-      declarations: [
-        AppComponent
-      ],
-    }).compileComponents();
-  }));
+  let spectator: Spectator<AppComponent>;
 
-  it('should create the app', () => {
-    const fixture = TestBed.createComponent(AppComponent);
-    const app = fixture.componentInstance;
-    expect(app).toBeTruthy();
+  const createComponent = createComponentFactory({
+    component: AppComponent,
+    providers: [{ provide: STATE, useValue: { go() {} } }],
   });
 
-  it(`should have as title 'spectator-issue'`, () => {
-    const fixture = TestBed.createComponent(AppComponent);
-    const app = fixture.componentInstance;
-    expect(app.title).toEqual('spectator-issue');
+  beforeEach(() => {
+    spectator = createComponent();
   });
 
-  it('should render title', () => {
-    const fixture = TestBed.createComponent(AppComponent);
-    fixture.detectChanges();
-    const compiled = fixture.nativeElement;
-    expect(compiled.querySelector('.content span').textContent).toContain('spectator-issue app is running!');
+  it('should get the correct instance of STATE', () => {
+    const service = spectator.inject(STATE);
+
+    console.log(service);
+
+    expect(service).toBeDefined();
+  });
+
+  it('should get the mocked instance of STATE', () => {
+    spectator = createComponent({ providers: [{ provide: STATE, useClass: StateMock }] });
+
+    const service = spectator.inject(STATE);
+
+    console.log(service);
+
+    expect(service instanceof StateMock).toBeTrue();
   });
 });
